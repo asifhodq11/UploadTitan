@@ -1,56 +1,59 @@
+# image_generator.py
+
 from PIL import Image, ImageDraw, ImageFont
-import random
+import requests
+from io import BytesIO
 import os
-from topic_research import get_trending_topic
-from job_logger import log_event
 
-# Image constants
-WIDTH, HEIGHT = 1080, 1920
-FONTS = ["arial.ttf", "DejaVuSans-Bold.ttf"]  # Change or expand if needed
-WATERMARK = "@QuickShortsBot"
+# Constants
+WIDTH, HEIGHT = 720, 720
+BACKGROUND_COLOR = (255, 255, 255)
+TEXT_COLOR = (0, 0, 0)
+FONT_PATH = "arial.ttf"  # Or "DejaVuSans-Bold.ttf" for Replit
+ASSETS_FOLDER = "assets"
+LOGO_FILENAME = "logo.png"
 
-# Color options for variety
-BG_COLORS = ["#121212", "#1a1a1a", "#000000", "#202020"]
-TEXT_COLORS = ["#FFDD00", "#FF4500", "#00FFFF", "#FFFFFF", "#1DB954"]
-
-def get_font(size):
-    for font_name in FONTS:
-        try:
-            return ImageFont.truetype(font_name, size)
-        except IOError:
-            continue
-    return ImageFont.load_default()
-
-def generate_image(topic=None, output_path="thumbnail.jpg"):
-    if topic is None:
-        topic = get_trending_topic()
-
-    bg_color = random.choice(BG_COLORS)
-    text_color = random.choice(TEXT_COLORS)
-
-    image = Image.new("RGB", (WIDTH, HEIGHT), color=bg_color)
+def generate_deal_image(title, price, discount, image_url, output_path="deal_card.jpg"):
+    # Create base image
+    image = Image.new("RGB", (WIDTH, HEIGHT), BACKGROUND_COLOR)
     draw = ImageDraw.Draw(image)
 
-    title = f"{topic}".upper()
+    # Load fonts
+    try:
+        title_font = ImageFont.truetype(FONT_PATH, 36)
+        price_font = ImageFont.truetype(FONT_PATH, 30)
+        discount_font = ImageFont.truetype(FONT_PATH, 28)
+    except:
+        title_font = ImageFont.load_default()
+        price_font = ImageFont.load_default()
+        discount_font = ImageFont.load_default()
 
-    # Auto font size fitting
-    font_size = 100
-    font = get_font(font_size)
-    while font.getlength(title) > WIDTH - 100 and font_size > 10:
-        font_size -= 5
-        font = get_font(font_size)
+    # Load and paste product image
+    try:
+        response = requests.get(image_url, timeout=5)
+        product_img = Image.open(BytesIO(response.content)).convert("RGB")
+        product_img = product_img.resize((600, 400))
+        image.paste(product_img, (60, 40))
+    except Exception as e:
+        print("Error loading product image:", e)
 
-    text_width, text_height = draw.textsize(title, font=font)
-    text_x = (WIDTH - text_width) / 2
-    text_y = HEIGHT / 2 - text_height / 2
+    # Draw title
+    draw.text((40, 460), title[:80] + ("..." if len(title) > 80 else ""), fill=TEXT_COLOR, font=title_font)
 
-    # Draw main text
-    draw.text((text_x, text_y), title, font=font, fill=text_color)
+    # Draw price and discount
+    draw.text((40, 530), f"Price: {price}", fill=(0, 128, 0), font=price_font)
+    draw.text((40, 580), f"Discount: {discount}", fill=(255, 0, 0), font=discount_font)
 
-    # Add watermark
-    wm_font = get_font(30)
-    draw.text((30, HEIGHT - 80), WATERMARK, font=wm_font, fill=(180, 180, 180))
+    # Optional: Add logo watermark (bottom right)
+    logo_path = os.path.join(ASSETS_FOLDER, LOGO_FILENAME)
+    if os.path.exists(logo_path):
+        try:
+            logo = Image.open(logo_path).convert("RGBA")
+            logo.thumbnail((120, 120))
+            image.paste(logo, (WIDTH - logo.width - 20, HEIGHT - logo.height - 20), logo)
+        except Exception as e:
+            print("Logo load error:", e)
 
+    # Save final image
     image.save(output_path)
-    log_event("Image Generated", f"Saved {output_path} for topic: {topic}")
     return output_path
