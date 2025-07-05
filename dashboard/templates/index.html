@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>UploadTitan Dashboard</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <h1>🧠 UploadTitan Logs (Last 24 Hours)</h1>
+  <div class="log-container">
+    {% for log in logs %}
+      <div class="log-entry">
+        <pre>{{ log | tojson(indent=2) }}</pre>
+      </div>
+    {% endfor %}
+  </div>
+</body>
+</html>
