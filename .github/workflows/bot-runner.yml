@@ -1,37 +1,27 @@
-name: YouTube Upload Bot Runner
+name: Run UploadTitan Bot
 
 on:
   schedule:
     - cron: '*/15 * * * *'  # Runs every 15 minutes
-  workflow_dispatch:
+  workflow_dispatch:       # Allows manual triggering
 
 jobs:
   run-bot:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+    - name: Checkout repo
+      uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: 3.10
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.10'
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
 
-      - name: Run main script
-        env:
-          YOUTUBE_CLIENT_SECRET: ${{ secrets.YOUTUBE_CLIENT_SECRET }}
-          YOUTUBE_REFRESH_TOKEN: ${{ secrets.YOUTUBE_REFRESH_TOKEN }}
-          YOUTUBE_CHANNEL_ID: ${{ secrets.YOUTUBE_CHANNEL_ID }}
-          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          TELEGRAM_USER_ID: ${{ secrets.TELEGRAM_USER_ID }}
-          BRAND_NAME: ${{ secrets.BRAND_NAME }}
-          UPLOAD_TIMEZONE: ${{ secrets.UPLOAD_TIMEZONE }}
-          SMART_SCHEDULE: ${{ secrets.SMART_SCHEDULE }}
-          DASHBOARD_SECRET: ${{ secrets.DASHBOARD_SECRET }}
-        run: python main.py
+    - name: Run the bot
+      run: |
+        python main.py
