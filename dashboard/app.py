@@ -4,6 +4,9 @@ import os
 
 app = Flask(__name__)
 
+# This Flask app was created to show a dashboard log for the AI Comment Bot.
+# It loads logs from 'dashboard_log.json' and shows them on a creative web interface.
+
 LOG_FILE = "dashboard_log.json"
 
 # Ensure log file exists
