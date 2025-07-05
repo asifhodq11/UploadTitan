@@ -1,0 +1,17 @@
+body {
+  font-family: monospace;
+  background: #111;
+  color: #0f0;
+  padding: 20px;
+}
+
+.log-container {
+  margin-top: 20px;
+}
+
+.log-entry {
+  background: #222;
+  border: 1px solid #333;
+  margin-bottom: 10px;
+  padding: 10px;
+}
