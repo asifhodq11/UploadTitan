@@ -1,17 +1,62 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>UploadTitan Dashboard</title>
-  <link rel="stylesheet" href="/static/style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Creative Dashboard</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/framer-motion/dist/framer-motion.umd.js"></script>
+  <style>
+    body {
+      background-color: #92C8D1;
+      background-image: url('https://www.transparenttextures.com/patterns/cubes.png');
+    }
+    .animate-float {
+      animation: float 3s ease-in-out infinite;
+    }
+    @keyframes float {
+      0% { transform: translateY(0px); }
+      50% { transform: translateY(-20px); }
+      100% { transform: translateY(0px); }
+    }
+  </style>
 </head>
-<body>
-  <h1>🧠 UploadTitan Logs (Last 24 Hours)</h1>
-  <div class="log-container">
+<body class="min-h-screen p-6 text-white relative">
+
+  <h1 class="text-4xl font-bold mb-4 flex items-center gap-3">
+    <svg class="w-8 h-8 text-yellow-200 animate-bounce" fill="currentColor" viewBox="0 0 20 20"><path d="M11 17a1 1 0 01-2 0V6a1 1 0 112 0v11z"/></svg>
+    Creative Dashboard
+  </h1>
+
+  <div class="bg-[#fbd1a2] p-3 rounded-xl text-black font-semibold inline-block mb-4">
+    📋 Recent Activity Logs (Last 20)
+  </div>
+
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
     {% for log in logs %}
-      <div class="log-entry">
-        <pre>{{ log | tojson(indent=2) }}</pre>
+      <div class="bg-white bg-opacity-10 backdrop-blur-sm rounded-2xl p-4 shadow-lg">
+        <h2 class="text-xl font-semibold mb-1">{{ log.title or "Unnamed Log" }}</h2>
+        <p class="text-sm opacity-80">⏰ {{ log.timestamp or "No timestamp" }}</p>
+        {% if log.platform %}
+        <p class="text-sm">🌐 Platform: {{ log.platform }}</p>
+        {% endif %}
+        {% if log.status %}
+        <p class="text-sm text-green-300">✅ Status: {{ log.status }}</p>
+        {% endif %}
       </div>
     {% endfor %}
   </div>
+
+  <img
+    src="https://i.ibb.co/MCFbp7v/ironman-fly.png"
+    alt="Ironman Flying"
+    class="w-32 h-32 absolute bottom-10 right-10 animate-float"
+  />
+
+  <img
+    src="https://i.ibb.co/FqKFbM8/thor-peek.png"
+    alt="Thor Peeking"
+    class="w-24 h-24 absolute top-10 left-6"
+  />
 </body>
 </html>
