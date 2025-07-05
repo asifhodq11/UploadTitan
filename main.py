@@ -1,5 +1,7 @@
 import os
 import logging
+from threading import Thread
+
 from image_generator import generate_images_from_prompt
 from audio_generator import generate_audio
 from video_creator import create_video_from_images
@@ -8,6 +10,9 @@ from title_description_generator import generate_title_description
 
 # Optional: You can control prompts based on trending topics
 from trending_scraper import get_trending_prompts
+
+# Import Flask dashboard app
+from dashboard.app import app as flask_app
 
 logging.basicConfig(level=logging.INFO)
 
@@ -52,5 +57,12 @@ def run_pipeline():
         except Exception as e:
             logging.error(f"❌ Pipeline failed for {video_id}: {e}")
 
+def run_dashboard():
+    flask_app.run(host="0.0.0.0", port=3000)
+
 if __name__ == "__main__":
+    # Start the dashboard in a separate thread
+    Thread(target=run_dashboard).start()
+
+    # Run the video generation/upload pipeline
     run_pipeline()
