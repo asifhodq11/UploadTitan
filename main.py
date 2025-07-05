@@ -1,36 +1,56 @@
-import time
-from datetime import datetime
 import os
-import threading
+import logging
+from image_generator import generate_images_from_prompt
+from audio_generator import generate_audio
+from video_creator import create_video_from_images
+from youtube_uploader import upload_video
+from title_description_generator import generate_title_description
 
-from job_handler import run_video_job
-from job_logger import log_event, log_error, is_another_job_running, set_job_running, clear_job_running
+# Optional: You can control prompts based on trending topics
+from trending_scraper import get_trending_prompts
 
-def within_time_window():
-    now = datetime.now().hour
-    return 6 <= now <= 22  # Runs only between 6AM and 10PM
+logging.basicConfig(level=logging.INFO)
 
-def main():
-    job_id = int(time.time())
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+def ensure_dir(path):
+    if not os.path.exists(path):
+        os.makedirs(path)
 
-    if not within_time_window():
-        log_event(job_id, "Skipped", "Outside allowed time window", timestamp)
-        return
+def run_pipeline():
+    base_output_dir = "output"
+    ensure_dir(base_output_dir)
 
-    if is_another_job_running():
-        log_event(job_id, "Skipped", "Previous job still running", timestamp)
-        return
+    prompts = get_trending_prompts(limit=1)  # You can change this for more videos
+    for idx, prompt in enumerate(prompts):
+        video_id = f"video_{idx}"
+        video_dir = os.path.join(base_output_dir, video_id)
+        img_dir = os.path.join(video_dir, "images")
+        audio_path = os.path.join(video_dir, "audio.mp3")
+        final_video_path = os.path.join(video_dir, "final_video.mp4")
 
-    try:
-        set_job_running(job_id)
-        log_event(job_id, "Started", "Running YouTube upload job", timestamp)
-        run_video_job(job_id)  # Runs full upload automation
-        log_event(job_id, "Completed", "Video uploaded successfully", timestamp)
-    except Exception as e:
-        log_error(job_id, f"Unhandled Error: {str(e)}", timestamp)
-    finally:
-        clear_job_running()
+        ensure_dir(img_dir)
+
+        try:
+            logging.info(f"🎯 Starting pipeline for: {prompt}")
+
+            # Step 1: Generate Images
+            generate_images_from_prompt(prompt, output_dir=img_dir)
+
+            # Step 2: Generate Audio
+            generate_audio(prompt, output_path=audio_path)
+
+            # Step 3: Create Video
+            create_video_from_images(img_dir, audio_path, final_video_path)
+
+            # Step 4: Generate YouTube Title & Description
+            title, description, tags = generate_title_description(prompt)
+
+            # Step 5: Upload to YouTube
+            upload_video(final_video_path, title, description, tags)
+
+            logging.info(f"✅ Done: {video_id}")
+
+        except Exception as e:
+            logging.error(f"❌ Pipeline failed for {video_id}: {e}")
 
 if __name__ == "__main__":
-    main()
+    run_pipeline()
