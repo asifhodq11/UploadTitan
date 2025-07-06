@@ -8,3 +8,8 @@ opencv-python
 Flask
 pyttsx3
 pydub
+modules
+transformers
+torch
+Pillow
+uploader
